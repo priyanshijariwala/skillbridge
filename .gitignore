@@ -1,0 +1,27 @@
+# Python
+.venv
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Environment & Database
+.env
+.mongo_data/
+*.log
+
+# Node & Frontend
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# System & IDE
+.DS_Store
+.idea/
+.vscode/
+
