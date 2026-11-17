@@ -74,6 +74,14 @@ async def init_db() -> None:
         await feedback_col.create_index([("interview_id", ASCENDING)], unique=True)
         await feedback_col.create_index([("user_id", ASCENDING), ("created_at", -1)])
 
+        conversations_col = db_instance.db["chat_conversations"]
+        await conversations_col.create_index([("user_id", ASCENDING), ("last_message_at", -1)])
+        await conversations_col.create_index([("user_id", ASCENDING), ("status", ASCENDING)])
+
+        chat_messages_col = db_instance.db["chat_messages"]
+        await chat_messages_col.create_index([("conversation_id", ASCENDING), ("created_at", 1)])
+        await chat_messages_col.create_index([("user_id", ASCENDING), ("created_at", -1)])
+
         # Run idempotent seeders
         from app.db.seeds.job_roles import seed_job_roles
         await seed_job_roles(db_instance.db)

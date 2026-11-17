@@ -14,6 +14,7 @@ import InterviewSetupScreen from "@/features/interview/InterviewSetupScreen"
 import InterviewScreen from "@/features/interview/InterviewScreen"
 import InterviewFeedbackScreen from "@/features/interview/InterviewFeedbackScreen"
 import InterviewHistoryScreen from "@/features/interview/InterviewHistoryScreen"
+import CareerAssistantScreen from "@/features/assistant/CareerAssistantScreen"
 import ProfileScreen from "@/features/profile/ProfileScreen"
 import NotFoundScreen from "@/features/common/NotFoundScreen"
 
@@ -83,6 +84,10 @@ export const router = createBrowserRouter([
           {
             path: "/interview-history",
             element: <InterviewHistoryScreen />,
+          },
+          {
+            path: "/career-assistant",
+            element: <CareerAssistantScreen />,
           },
           {
             path: "/profile",

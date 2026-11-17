@@ -12,6 +12,7 @@ import {
   X,
   Target,
   LogOut,
+  Sparkles,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/features/auth/hooks/useAuth"
@@ -29,6 +30,7 @@ const navItems = [
   { label: "Learning Roadmap", href: "/roadmap", icon: Milestone },
   { label: "AI Interview", href: "/interview/setup", icon: Bot },
   { label: "Interview History", href: "/interview-history", icon: History },
+  { label: "Career Assistant", href: "/career-assistant", icon: Sparkles },
 ]
 
 const secondaryNavItems = [

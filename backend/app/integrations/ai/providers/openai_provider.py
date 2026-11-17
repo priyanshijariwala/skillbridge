@@ -124,3 +124,115 @@ class OpenAIProvider(BaseAIProvider):
                 message="The AI provider returned an invalid response structure.",
             )
 
+    async def generate_text(
+        self,
+        system_prompt: str,
+        user_prompt: str,
+        conversation_history: Optional[List[Dict[str, str]]] = None,
+        temperature: float = 0.7,
+    ) -> str:
+        if not self._api_key or not self._api_key.strip():
+            logger.error("OpenAIProvider invoked but AI_API_KEY is not configured.")
+            raise AppException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                code="AI_PROVIDER_NOT_CONFIGURED",
+                message="AI analysis provider is not configured. Please set AI_API_KEY in backend configuration.",
+            )
+
+        url = f"{self._base_url}/chat/completions"
+        headers = {
+            "Authorization": f"Bearer {self._api_key.strip()}",
+            "Content-Type": "application/json",
+        }
+        messages = [{"role": "system", "content": system_prompt}]
+        if conversation_history:
+            messages.extend(conversation_history)
+        messages.append({"role": "user", "content": user_prompt})
+
+        payload = {
+            "model": self._model,
+            "messages": messages,
+            "temperature": temperature,
+        }
+
+        try:
+            async with httpx.AsyncClient(timeout=self._timeout_seconds) as client:
+                response = await client.post(url, headers=headers, json=payload)
+                response.raise_for_status()
+                data = response.json()
+                choices = data.get("choices", [])
+                if not choices:
+                    raise ValueError("No choices in OpenAI response")
+                return choices[0]["message"]["content"].strip()
+        except httpx.TimeoutException:
+            logger.warning("OpenAI API request timed out after %d seconds.", self._timeout_seconds)
+            raise AppException(
+                status_code=status.HTTP_504_GATEWAY_TIMEOUT,
+                code="AI_GATEWAY_TIMEOUT",
+                message="The AI assistant request timed out. Please try again.",
+            )
+        except Exception as e:
+            logger.error("Unexpected error contacting OpenAI API: %s", e)
+            raise AppException(
+                status_code=status.HTTP_502_BAD_GATEWAY,
+                code="AI_CONNECTION_ERROR",
+                message="Could not establish connection to the AI provider.",
+            )
+
+    async def generate_stream(
+        self,
+        system_prompt: str,
+        user_prompt: str,
+        conversation_history: Optional[List[Dict[str, str]]] = None,
+        temperature: float = 0.7,
+    ):
+        if not self._api_key or not self._api_key.strip():
+            raise AppException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                code="AI_PROVIDER_NOT_CONFIGURED",
+                message="AI analysis provider is not configured. Please set AI_API_KEY in backend configuration.",
+            )
+
+        url = f"{self._base_url}/chat/completions"
+        headers = {
+            "Authorization": f"Bearer {self._api_key.strip()}",
+            "Content-Type": "application/json",
+        }
+        messages = [{"role": "system", "content": system_prompt}]
+        if conversation_history:
+            messages.extend(conversation_history)
+        messages.append({"role": "user", "content": user_prompt})
+
+        payload = {
+            "model": self._model,
+            "messages": messages,
+            "temperature": temperature,
+            "stream": True,
+        }
+
+        try:
+            async with httpx.AsyncClient(timeout=self._timeout_seconds) as client:
+                async with client.stream("POST", url, headers=headers, json=payload) as response:
+                    response.raise_for_status()
+                    async for line in response.aiter_lines():
+                        if not line or not line.startswith("data: "):
+                            continue
+                        data_str = line[6:].strip()
+                        if data_str == "[DONE]":
+                            break
+                        try:
+                            chunk = json.loads(data_str)
+                            delta = chunk.get("choices", [{}])[0].get("delta", {})
+                            content = delta.get("content")
+                            if content:
+                                yield content
+                        except json.JSONDecodeError:
+                            continue
+        except Exception as e:
+            logger.error("Error during OpenAI streaming: %s", e)
+            raise AppException(
+                status_code=status.HTTP_502_BAD_GATEWAY,
+                code="AI_STREAM_ERROR",
+                message="Error streaming response from AI provider.",
+            )
+
