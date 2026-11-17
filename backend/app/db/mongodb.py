@@ -82,9 +82,26 @@ async def init_db() -> None:
         await chat_messages_col.create_index([("conversation_id", ASCENDING), ("created_at", 1)])
         await chat_messages_col.create_index([("user_id", ASCENDING), ("created_at", -1)])
 
+        coding_problems_col = db_instance.db["coding_problems"]
+        await coding_problems_col.create_index([("slug", ASCENDING)], unique=True)
+        await coding_problems_col.create_index([("difficulty", ASCENDING)])
+        await coding_problems_col.create_index([("category", ASCENDING)])
+        await coding_problems_col.create_index([("is_active", ASCENDING)])
+
+        code_submissions_col = db_instance.db["code_submissions"]
+        await code_submissions_col.create_index([("user_id", ASCENDING), ("created_at", -1)])
+        await code_submissions_col.create_index([("user_id", ASCENDING), ("problem_id", ASCENDING)])
+        await code_submissions_col.create_index([("problem_id", ASCENDING), ("execution_status", ASCENDING)])
+
+        coding_assessments_col = db_instance.db["coding_assessments"]
+        await coding_assessments_col.create_index([("user_id", ASCENDING), ("created_at", -1)])
+        await coding_assessments_col.create_index([("status", ASCENDING)])
+
         # Run idempotent seeders
         from app.db.seeds.job_roles import seed_job_roles
+        from app.db.seeds.coding_problems import seed_coding_problems
         await seed_job_roles(db_instance.db)
+        await seed_coding_problems(db_instance.db)
 
         logger.info("MongoDB indexes verified and seed data initialized successfully.")
     except Exception as e:

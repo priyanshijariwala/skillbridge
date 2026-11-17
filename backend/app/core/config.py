@@ -50,6 +50,17 @@ class Settings(BaseSettings):
     TTS_TIMEOUT_SECONDS: int = 30
     TTS_MAX_CHARACTERS: int = 2000
 
+    # Code Execution Settings
+    CODE_EXECUTION_PROVIDER: str = "mock"
+    JUDGE0_URL: str = "http://localhost:2358"
+    JUDGE0_API_KEY: Optional[str] = None
+    JUDGE0_AUTH_TOKEN: Optional[str] = None
+    CODE_EXECUTION_TIMEOUT_SECONDS: float = 5.0
+    MAX_SOURCE_CODE_SIZE_BYTES: int = 65536
+    MAX_STDIN_SIZE_BYTES: int = 16384
+    DEFAULT_CPU_TIME_LIMIT_SECONDS: float = 2.0
+    DEFAULT_MEMORY_LIMIT_MB: int = 128
+
     # CORS
     FRONTEND_ORIGIN: str = "http://localhost:5173"
     CORS_ORIGINS: Union[List[str], str] = [

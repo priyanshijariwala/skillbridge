@@ -13,6 +13,7 @@ import {
   Target,
   LogOut,
   Sparkles,
+  Code2,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/features/auth/hooks/useAuth"
@@ -30,6 +31,7 @@ const navItems = [
   { label: "Learning Roadmap", href: "/roadmap", icon: Milestone },
   { label: "AI Interview", href: "/interview/setup", icon: Bot },
   { label: "Interview History", href: "/interview-history", icon: History },
+  { label: "Coding Practice", href: "/coding", icon: Code2 },
   { label: "Career Assistant", href: "/career-assistant", icon: Sparkles },
 ]
 

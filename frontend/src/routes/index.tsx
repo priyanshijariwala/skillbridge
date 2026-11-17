@@ -15,6 +15,9 @@ import InterviewScreen from "@/features/interview/InterviewScreen"
 import InterviewFeedbackScreen from "@/features/interview/InterviewFeedbackScreen"
 import InterviewHistoryScreen from "@/features/interview/InterviewHistoryScreen"
 import CareerAssistantScreen from "@/features/assistant/CareerAssistantScreen"
+import CodingProblemsPage from "@/features/coding/pages/CodingProblemsPage"
+import CodingWorkspacePage from "@/features/coding/pages/CodingWorkspacePage"
+import SubmissionHistoryPage from "@/features/coding/pages/SubmissionHistoryPage"
 import ProfileScreen from "@/features/profile/ProfileScreen"
 import NotFoundScreen from "@/features/common/NotFoundScreen"
 
@@ -84,6 +87,18 @@ export const router = createBrowserRouter([
           {
             path: "/interview-history",
             element: <InterviewHistoryScreen />,
+          },
+          {
+            path: "/coding",
+            element: <CodingProblemsPage />,
+          },
+          {
+            path: "/coding/problems/:problemId",
+            element: <CodingWorkspacePage />,
+          },
+          {
+            path: "/coding/submissions",
+            element: <SubmissionHistoryPage />,
           },
           {
             path: "/career-assistant",

@@ -10,6 +10,7 @@ from app.api.v1.endpoints import (
     interviews,
     speech,
     assistant,
+    coding,
 )
 
 api_router = APIRouter()
@@ -23,3 +24,4 @@ api_router.include_router(roadmaps.router)
 api_router.include_router(interviews.router)
 api_router.include_router(speech.router)
 api_router.include_router(assistant.router)
+api_router.include_router(coding.router)
