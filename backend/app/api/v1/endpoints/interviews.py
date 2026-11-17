@@ -123,7 +123,33 @@ async def complete_interview(
     db: AsyncIOMotorDatabase = Depends(get_database),
 ) -> InterviewFeedbackResponse:
     service = InterviewSessionService(db)
-    return await service.complete_interview(interview_id=interview_id, user_id=current_user.id)
+    feedback = await service.complete_interview(interview_id=interview_id, user_id=current_user.id)
+    try:
+        from app.services.notifications.notification_service import NotificationService
+        from app.schemas.notification import NotificationEvent, NotificationCategory, NotificationType
+        notif_service = NotificationService(db)
+        await notif_service.dispatch_event(
+            NotificationEvent(
+                user_id=current_user.id,
+                title="Mock Interview Completed",
+                message=f"Your mock interview session is complete. Overall Score: {feedback.overall_score}/100.",
+                category=NotificationCategory.INTERVIEW.value,
+                type=NotificationType.SUCCESS.value,
+                action_url=f"/interview/{interview_id}/feedback",
+                email_template="interview_completed",
+                email_subject="Mock Interview Feedback & Evaluation — SkillBridge AI",
+                email_context={
+                    "name": current_user.name,
+                    "role_title": feedback.role_title,
+                    "overall_score": feedback.overall_score,
+                    "interview_id": interview_id,
+                },
+                recipient_email=current_user.email,
+            )
+        )
+    except Exception:
+        pass
+    return feedback
 
 
 @router.get(

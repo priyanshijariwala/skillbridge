@@ -61,6 +61,20 @@ class Settings(BaseSettings):
     DEFAULT_CPU_TIME_LIMIT_SECONDS: float = 2.0
     DEFAULT_MEMORY_LIMIT_MB: int = 128
 
+    # Email & Notification Settings
+    EMAIL_PROVIDER: str = "mock"  # "mock" | "smtp" | "sendgrid" | "resend"
+    EMAIL_FROM_ADDRESS: str = "notifications@skillbridge.ai"
+    EMAIL_FROM_NAME: str = "SkillBridge AI"
+    SMTP_HOST: str = "localhost"
+    SMTP_PORT: int = 587
+    SMTP_USERNAME: Optional[str] = None
+    SMTP_PASSWORD: Optional[str] = None
+    SMTP_USE_TLS: bool = True
+    EMAIL_API_KEY: Optional[str] = None
+    EMAIL_MAX_RETRIES: int = 3
+    EMAIL_RETRY_BACKOFF_SECONDS: float = 1.0
+    FRONTEND_URL: str = "http://localhost:5173"
+
     # CORS
     FRONTEND_ORIGIN: str = "http://localhost:5173"
     CORS_ORIGINS: Union[List[str], str] = [

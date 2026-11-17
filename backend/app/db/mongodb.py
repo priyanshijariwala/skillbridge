@@ -97,6 +97,19 @@ async def init_db() -> None:
         await coding_assessments_col.create_index([("user_id", ASCENDING), ("created_at", -1)])
         await coding_assessments_col.create_index([("status", ASCENDING)])
 
+        # Notification indexes
+        notifications_col = db_instance.db["notifications"]
+        await notifications_col.create_index([("user_id", ASCENDING), ("created_at", -1)])
+        await notifications_col.create_index([("user_id", ASCENDING), ("is_read", ASCENDING)])
+        await notifications_col.create_index([("user_id", ASCENDING), ("category", ASCENDING)])
+
+        notification_prefs_col = db_instance.db["notification_preferences"]
+        await notification_prefs_col.create_index([("user_id", ASCENDING)], unique=True)
+
+        email_logs_col = db_instance.db["email_logs"]
+        await email_logs_col.create_index([("user_id", ASCENDING), ("created_at", -1)])
+        await email_logs_col.create_index([("status", ASCENDING)])
+
         # Run idempotent seeders
         from app.db.seeds.job_roles import seed_job_roles
         from app.db.seeds.coding_problems import seed_coding_problems

@@ -1,8 +1,9 @@
 import React from "react"
-import { Menu, Bell, Sparkles, LogOut } from "lucide-react"
+import { Menu, Sparkles, LogOut } from "lucide-react"
 import { NavLink, useNavigate } from "react-router-dom"
 import { Badge } from "@/components/ui/badge"
 import { useAuth } from "@/features/auth/hooks/useAuth"
+import { NotificationBell } from "@/features/notifications/components/NotificationBell"
 
 export interface AppHeaderProps {
   onMenuClick: () => void
@@ -61,13 +62,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
           <span className="font-medium text-xs">AI Advisory Mode Active</span>
         </Badge>
 
-        <button
-          className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent relative cursor-pointer"
-          aria-label="Notifications"
-        >
-          <Bell className="w-4 h-4" />
-          <span className="w-2 h-2 rounded-full bg-primary absolute top-2 right-2 ring-2 ring-card" />
-        </button>
+        <NotificationBell />
 
         <NavLink
           to="/profile"

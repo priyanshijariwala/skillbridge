@@ -92,7 +92,37 @@ async def submit_solution(
     db: AsyncIOMotorDatabase = Depends(get_database),
 ) -> SubmissionResponse:
     service = CodingService(db)
-    return await service.submit_solution(user_id=current_user.id, payload=payload)
+    sub = await service.submit_solution(user_id=current_user.id, payload=payload)
+    try:
+        from app.services.notifications.notification_service import NotificationService
+        from app.schemas.notification import NotificationEvent, NotificationCategory, NotificationType
+        notif_service = NotificationService(db)
+        is_acc = sub.execution_status == "accepted"
+        await notif_service.dispatch_event(
+            NotificationEvent(
+                user_id=current_user.id,
+                title=f"Coding Submission: {sub.problem_title}",
+                message=f"Evaluation result: {sub.execution_status.replace('_', ' ').upper()} ({sub.test_cases_passed}/{sub.total_test_cases} passed).",
+                category=NotificationCategory.CODING.value,
+                type=NotificationType.SUCCESS.value if is_acc else NotificationType.WARNING.value,
+                action_url=f"/coding/problems/{sub.problem_slug}",
+                email_template="coding_assessment_evaluated",
+                email_subject="Coding Assessment Result — SkillBridge AI",
+                email_context={
+                    "name": current_user.name,
+                    "problem_title": sub.problem_title,
+                    "verdict": sub.execution_status,
+                    "passed_count": sub.test_cases_passed,
+                    "total_count": sub.total_test_cases,
+                    "submission_id": sub.id,
+                    "problem_slug": sub.problem_slug,
+                },
+                recipient_email=current_user.email,
+            )
+        )
+    except Exception:
+        pass
+    return sub
 
 
 @router.get(

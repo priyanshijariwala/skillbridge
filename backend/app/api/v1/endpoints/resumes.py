@@ -154,7 +154,32 @@ async def analyze_resume(
     Extract text from uploaded resume, invoke AI analysis,
     validate structured output, and persist to MongoDB.
     """
-    return await service.analyze_resume(resume_id, current_user.id)
+    result = await service.analyze_resume(resume_id, current_user.id)
+    try:
+        from app.services.notifications.notification_service import NotificationService
+        from app.schemas.notification import NotificationEvent, NotificationCategory, NotificationType
+        notif_service = NotificationService(service.analysis_repo.collection.database)
+        await notif_service.dispatch_event(
+            NotificationEvent(
+                user_id=current_user.id,
+                title="Resume Analysis Completed",
+                message=f"Your resume analysis is ready. Overall profile match: {result.overall_score}%.",
+                category=NotificationCategory.RESUME.value,
+                type=NotificationType.SUCCESS.value,
+                action_url="/resume",
+                email_template="resume_analysis_completed",
+                email_subject="Your Resume Analysis is Ready — SkillBridge AI",
+                email_context={
+                    "name": current_user.name,
+                    "target_role": "Target Role",
+                    "score": result.overall_score,
+                },
+                recipient_email=current_user.email,
+            )
+        )
+    except Exception:
+        pass
+    return result
 
 
 @router.get(

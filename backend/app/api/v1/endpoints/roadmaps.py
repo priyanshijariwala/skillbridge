@@ -43,7 +43,31 @@ async def generate_learning_roadmap(
         skill_gap_analysis_id=payload.skill_gap_analysis_id if payload else None,
         available_hours_per_week=payload.available_hours_per_week if payload else None,
     )
-    return RoadmapRead(**roadmap)
+    res = RoadmapRead(**roadmap)
+    try:
+        from app.services.notifications.notification_service import NotificationService
+        from app.schemas.notification import NotificationEvent, NotificationCategory, NotificationType
+        notif_service = NotificationService(db)
+        await notif_service.dispatch_event(
+            NotificationEvent(
+                user_id=current_user.id,
+                title="Learning Roadmap Generated",
+                message=f"Your personalized learning roadmap with {len(res.milestones)} milestones is ready.",
+                category=NotificationCategory.ROADMAP.value,
+                type=NotificationType.SUCCESS.value,
+                action_url="/roadmap",
+                email_template="roadmap_generated",
+                email_subject="Your Personalized Learning Roadmap is Ready — SkillBridge AI",
+                email_context={
+                    "name": current_user.name,
+                    "milestones_count": len(res.milestones),
+                },
+                recipient_email=current_user.email,
+            )
+        )
+    except Exception:
+        pass
+    return res
 
 
 @router.get(

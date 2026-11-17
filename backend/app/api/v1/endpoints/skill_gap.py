@@ -41,7 +41,32 @@ async def analyze_skill_gap(
         target_role_id=payload.target_role_id,
         resume_id=payload.resume_id,
     )
-    return SkillGapAnalysisRead(**analysis)
+    res = SkillGapAnalysisRead(**analysis)
+    try:
+        from app.services.notifications.notification_service import NotificationService
+        from app.schemas.notification import NotificationEvent, NotificationCategory, NotificationType
+        notif_service = NotificationService(db)
+        await notif_service.dispatch_event(
+            NotificationEvent(
+                user_id=current_user.id,
+                title="Skill Gap Analysis Completed",
+                message=f"Your skill-gap report for target role is ready. Found {len(res.missing_skills)} focus areas.",
+                category=NotificationCategory.SKILL_GAP.value,
+                type=NotificationType.INFO.value,
+                action_url="/skill-gap",
+                email_template="skill_gap_analysis_completed",
+                email_subject="Skill Gap Analysis Complete — Discover What to Learn Next",
+                email_context={
+                    "name": current_user.name,
+                    "target_role": "Target Role",
+                    "gaps_count": len(res.missing_skills),
+                },
+                recipient_email=current_user.email,
+            )
+        )
+    except Exception:
+        pass
+    return res
 
 
 @router.get(

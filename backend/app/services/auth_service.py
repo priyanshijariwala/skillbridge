@@ -55,7 +55,32 @@ class AuthService:
             password_hash=password_hash,
             role="user",
         )
-        return self._to_user_read(user_doc)
+        user_read = self._to_user_read(user_doc)
+        
+        # Dispatch Welcome Notification & Email
+        try:
+            from app.services.notifications.notification_service import NotificationService
+            from app.schemas.notification import NotificationEvent, NotificationCategory, NotificationType
+            notif_service = NotificationService(self.user_repo.collection.database)
+            await notif_service.get_preferences(user_read.id)
+            await notif_service.dispatch_event(
+                NotificationEvent(
+                    user_id=user_read.id,
+                    title="Welcome to SkillBridge AI!",
+                    message="Your career acceleration platform is ready. Upload your resume or analyze skill gaps to get started.",
+                    category=NotificationCategory.ACCOUNT.value,
+                    type=NotificationType.SUCCESS.value,
+                    action_url="/dashboard",
+                    email_template="welcome",
+                    email_subject="Welcome to SkillBridge AI — Ready for your career transformation?",
+                    email_context={"name": user_read.name},
+                    recipient_email=user_read.email,
+                )
+            )
+        except Exception:
+            pass
+
+        return user_read
 
     async def login(
         self, email: str, password: str

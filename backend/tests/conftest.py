@@ -41,6 +41,9 @@ async def test_db(test_db_client: AsyncIOMotorClient) -> AsyncGenerator[AsyncIOM
         "coding_problems",
         "code_submissions",
         "coding_assessments",
+        "notifications",
+        "notification_preferences",
+        "email_logs",
     )
     for col in test_collections:
         await db[col].delete_many({})
@@ -58,6 +61,10 @@ async def test_db(test_db_client: AsyncIOMotorClient) -> AsyncGenerator[AsyncIOM
     await db["chat_messages"].create_index([("conversation_id", 1), ("created_at", 1)])
     await db["coding_problems"].create_index("slug", unique=True)
     await db["code_submissions"].create_index([("user_id", 1), ("created_at", -1)])
+    await db["notifications"].create_index([("user_id", 1), ("created_at", -1)])
+    await db["notifications"].create_index([("user_id", 1), ("is_read", 1)])
+    await db["notification_preferences"].create_index("user_id", unique=True)
+    await db["email_logs"].create_index([("user_id", 1), ("created_at", -1)])
     await db["coding_assessments"].create_index([("user_id", 1), ("created_at", -1)])
 
     from app.db.seeds.job_roles import seed_job_roles

@@ -14,6 +14,7 @@ import {
   LogOut,
   Sparkles,
   Code2,
+  Bell,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/features/auth/hooks/useAuth"
@@ -36,8 +37,9 @@ const navItems = [
 ]
 
 const secondaryNavItems = [
+  { label: "Notifications", href: "/notifications", icon: Bell },
   { label: "Profile", href: "/profile", icon: User },
-  { label: "Settings", href: "/settings", icon: Settings },
+  { label: "Settings", href: "/settings/notifications", icon: Settings },
 ]
 
 export const AppSidebar: React.FC<AppSidebarProps> = ({

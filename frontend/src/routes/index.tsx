@@ -18,6 +18,8 @@ import CareerAssistantScreen from "@/features/assistant/CareerAssistantScreen"
 import CodingProblemsPage from "@/features/coding/pages/CodingProblemsPage"
 import CodingWorkspacePage from "@/features/coding/pages/CodingWorkspacePage"
 import SubmissionHistoryPage from "@/features/coding/pages/SubmissionHistoryPage"
+import NotificationPage from "@/features/notifications/pages/NotificationPage"
+import NotificationSettingsPage from "@/features/notifications/pages/NotificationSettingsPage"
 import ProfileScreen from "@/features/profile/ProfileScreen"
 import NotFoundScreen from "@/features/common/NotFoundScreen"
 
@@ -103,6 +105,14 @@ export const router = createBrowserRouter([
           {
             path: "/career-assistant",
             element: <CareerAssistantScreen />,
+          },
+          {
+            path: "/notifications",
+            element: <NotificationPage />,
+          },
+          {
+            path: "/settings/notifications",
+            element: <NotificationSettingsPage />,
           },
           {
             path: "/profile",
