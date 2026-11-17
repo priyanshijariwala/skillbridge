@@ -21,6 +21,7 @@ class InterviewCreateRequest(BaseModel):
     difficulty: InterviewDifficulty = "intermediate"
     duration_minutes: int = Field(default=30, ge=10, le=120)
     question_limit: Optional[int] = Field(None, ge=1, le=15)
+    mode: Literal["text", "voice"] = "text"
 
     @field_validator("difficulty", mode="before")
     @classmethod

@@ -9,6 +9,7 @@ FastAPI-powered REST API backend for SkillBridge AI career preparation and asses
 - **Authentication**: JWT access tokens (15m expiry) + Rotating HttpOnly refresh cookies (14d expiry)
 - **Password Security**: Argon2id hashing via `argon2-cffi`
 - **Validation**: Pydantic v2 & Pydantic Settings
+- **AI & Speech Providers**: OpenAI (GPT-4o-mini, Whisper-1, TTS-1) with full offline mock provider fallbacks
 
 ## Directory Structure
 

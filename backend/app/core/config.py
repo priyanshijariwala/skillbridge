@@ -38,6 +38,18 @@ class Settings(BaseSettings):
     AI_TIMEOUT_SECONDS: int = 60
     AI_BASE_URL: Optional[str] = None
 
+    # Speech Provider Settings (STT & TTS)
+    STT_PROVIDER: str = "openai"
+    STT_MODEL: str = "whisper-1"
+    STT_TIMEOUT_SECONDS: int = 30
+    MAX_AUDIO_SIZE_MB: int = 25
+
+    TTS_PROVIDER: str = "openai"
+    TTS_MODEL: str = "tts-1"
+    TTS_VOICE: str = "alloy"
+    TTS_TIMEOUT_SECONDS: int = 30
+    TTS_MAX_CHARACTERS: int = 2000
+
     # CORS
     FRONTEND_ORIGIN: str = "http://localhost:5173"
     CORS_ORIGINS: Union[List[str], str] = [

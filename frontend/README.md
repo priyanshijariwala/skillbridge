@@ -44,7 +44,7 @@ frontend/
 │   │   ├── resume/           # ResumeScreen
 │   │   ├── skill-gap/        # SkillGapScreen
 │   │   ├── roadmap/          # RoadmapScreen
-│   │   ├── interview/        # InterviewSetupScreen, InterviewScreen, InterviewFeedbackScreen, InterviewHistoryScreen
+│   │   ├── interview/        # InterviewSetupScreen, InterviewScreen, InterviewFeedbackScreen, InterviewHistoryScreen, voice components (VoiceRecorder, AudioPlayer, AudioWaveform, TranscriptEditor)
 │   │   ├── profile/          # ProfileScreen
 │   │   └── common/           # NotFoundScreen
 │   ├── layouts/

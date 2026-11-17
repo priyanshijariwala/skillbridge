@@ -3,7 +3,7 @@ import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { useNavigate } from "react-router-dom"
-import { Code2, Users, Scale, Sparkles, MicOff, ArrowRight, AlertCircle, Loader2 } from "lucide-react"
+import { Code2, Users, Scale, Sparkles, ArrowRight, AlertCircle, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -16,6 +16,7 @@ const setupSchema = z.object({
   interviewType: z.enum(["technical", "behavioral", "mixed"]),
   difficulty: z.enum(["junior", "mid", "senior"]),
   questionCount: z.number().min(2).max(10),
+  mode: z.enum(["voice", "text"]),
 })
 
 type SetupFormValues = z.infer<typeof setupSchema>
@@ -39,6 +40,7 @@ export const InterviewSetupScreen: React.FC = () => {
       interviewType: "technical",
       difficulty: "mid",
       questionCount: 5,
+      mode: "voice",
     },
   })
 
@@ -61,6 +63,7 @@ export const InterviewSetupScreen: React.FC = () => {
         difficulty: values.difficulty,
         duration_minutes: durationMinutes,
         question_limit: values.questionCount,
+        mode: values.mode,
       },
       {
         onSuccess: (data) => {
@@ -255,22 +258,51 @@ export const InterviewSetupScreen: React.FC = () => {
               />
             </div>
 
-            {/* Mode Notice: Text Active / Voice Mode Phase 2 */}
-            <div className="p-4 rounded-xl border border-border bg-slate-50/60 dark:bg-slate-900/30 flex items-start justify-between gap-3">
-              <div className="flex items-start gap-3">
-                <div className="p-2 rounded-lg bg-card border border-border">
-                  <MicOff className="w-4 h-4 text-muted-foreground" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-semibold text-foreground">Practice Mode: Text-Based</span>
-                    <Badge variant="outline" className="text-[10px] py-0">Phase 1 Active</Badge>
+            {/* 5. Practice Delivery Mode (Voice vs Text) */}
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">
+                5. Interview Delivery Mode
+              </label>
+              <Controller
+                name="mode"
+                control={control}
+                render={({ field }) => (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div
+                      onClick={() => field.onChange("voice")}
+                      className={`p-4 rounded-xl border cursor-pointer transition-all ${
+                        field.value === "voice"
+                          ? "border-primary bg-primary/5 ring-1 ring-primary/40 shadow-xs"
+                          : "border-border bg-card hover:bg-accent/40"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <span className="font-semibold text-sm text-foreground">Voice Practice Mode</span>
+                        <Badge variant="default" className="text-[10px] py-0">Recommended</Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        Speaks questions aloud (TTS) and records your spoken answer (STT) with transcript review.
+                      </p>
+                    </div>
+
+                    <div
+                      onClick={() => field.onChange("text")}
+                      className={`p-4 rounded-xl border cursor-pointer transition-all ${
+                        field.value === "text"
+                          ? "border-primary bg-primary/5 ring-1 ring-primary/40 shadow-xs"
+                          : "border-border bg-card hover:bg-accent/40"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <span className="font-semibold text-sm text-foreground">Text Practice Mode</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        Read written questions and draft detailed responses in the distraction-free text editor.
+                      </p>
+                    </div>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    Voice interview mode (Web Speech STT/TTS) is scheduled for Phase 2.
-                  </p>
-                </div>
-              </div>
+                )}
+              />
             </div>
 
             {/* Adaptive Notice */}

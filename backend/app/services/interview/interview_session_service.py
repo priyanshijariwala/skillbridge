@@ -108,7 +108,7 @@ class InterviewSessionService:
             "target_role_title": role_title,
             "interview_type": request.interview_type,
             "difficulty": request.difficulty,
-            "mode": "text",
+            "mode": request.mode or "text",
             "status": "in_progress",
             "settings": settings,
             "current_question_number": 1,

@@ -62,6 +62,7 @@ export interface InterviewCreatePayload {
   difficulty?: InterviewDifficulty
   duration_minutes?: number
   question_limit?: number
+  mode?: "voice" | "text"
 }
 
 export interface InterviewAnswerPayload {

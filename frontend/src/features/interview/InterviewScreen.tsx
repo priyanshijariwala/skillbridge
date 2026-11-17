@@ -7,6 +7,8 @@ import {
   CornerDownRight,
   AlertCircle,
   MessageSquare,
+  Mic,
+  FileText,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardContent } from "@/components/ui/card"
@@ -20,6 +22,7 @@ import {
   useCompleteInterview,
   useAbandonInterview,
 } from "@/features/interview/hooks/useInterview"
+import { VoiceInterviewPanel } from "@/features/interview/components/voice/VoiceInterviewPanel"
 import type { InterviewMessage } from "@/features/interview/types/interview.types"
 
 export const InterviewScreen: React.FC = () => {
@@ -33,9 +36,17 @@ export const InterviewScreen: React.FC = () => {
   const { mutate: completeInterview, isPending: isCompleting } = useCompleteInterview(interviewId || "")
   const { mutate: abandonInterview } = useAbandonInterview(interviewId || "")
 
+  const [activeMode, setActiveMode] = useState<"voice" | "text">("voice")
   const [answerText, setAnswerText] = useState("")
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [elapsedMinutes, setElapsedMinutes] = useState(1)
+
+  // Initialize mode from interview settings when loaded
+  useEffect(() => {
+    if (interview?.mode === "text" || interview?.mode === "voice") {
+      setActiveMode(interview.mode)
+    }
+  }, [interview?.mode])
 
   // Track session timer
   useEffect(() => {
@@ -53,7 +64,6 @@ export const InterviewScreen: React.FC = () => {
   }, [interview, navigate])
 
   // Identify the active question to be answered
-  // The active question is the latest assistant message in the conversation
   const assistantMessages = messages.filter((m) => m.role === "assistant")
   const activeQuestion: InterviewMessage | undefined =
     interview?.current_question || assistantMessages[assistantMessages.length - 1]
@@ -61,14 +71,14 @@ export const InterviewScreen: React.FC = () => {
   const isFollowUp = activeQuestion?.message_type === "follow_up"
   const wordCount = answerText.trim() ? answerText.trim().split(/\s+/).length : 0
 
-  const handleSubmitAnswer = () => {
-    if (!answerText.trim() || !activeQuestion || isSubmitting) return
+  const handleDirectSubmitAnswer = (text: string) => {
+    if (!text.trim() || !activeQuestion || isSubmitting) return
 
     setErrorMessage(null)
     submitAnswer(
       {
         question_id: activeQuestion.id,
-        answer: answerText.trim(),
+        answer: text.trim(),
       },
       {
         onSuccess: (response) => {
@@ -85,6 +95,10 @@ export const InterviewScreen: React.FC = () => {
         },
       }
     )
+  }
+
+  const handleSubmitTextAnswer = () => {
+    handleDirectSubmitAnswer(answerText)
   }
 
   const handleFinishEarly = () => {
@@ -200,9 +214,11 @@ export const InterviewScreen: React.FC = () => {
                     {isFollowUp ? `Adaptive Follow-up (Depth ${activeQuestion.follow_up_depth})` : "Main Question"}
                   </Badge>
                 </div>
-                <Badge variant="outline" className="text-xs">
-                  Question {interview.current_question_number} of {interview.settings?.main_question_limit || 5}
-                </Badge>
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline" className="text-xs">
+                    Question {interview.current_question_number} of {interview.settings?.main_question_limit || 5}
+                  </Badge>
+                </div>
               </div>
             </CardHeader>
             <CardContent>
@@ -216,61 +232,99 @@ export const InterviewScreen: React.FC = () => {
           </Card>
         )}
 
-        {/* Answer Drafting Editor */}
-        <Card className="shadow-xs space-y-4 p-6">
-          <div className="flex items-center justify-between">
-            <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-              Your Answer (Text Practice Mode)
-            </label>
-            <div className="flex items-center gap-2 text-xs text-emerald-600 font-medium">
-              <CheckCircle2 className="w-3.5 h-3.5" />
-              <span>Ready to submit</span>
-            </div>
+        {/* Mode Switcher Banner (Voice Mode vs Text Mode) */}
+        <div className="flex items-center justify-between px-2">
+          <div className="flex items-center gap-2">
+            <Button
+              variant={activeMode === "voice" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setActiveMode("voice")}
+              className="text-xs font-semibold"
+            >
+              <Mic className="w-3.5 h-3.5 mr-1.5" />
+              <span>Voice Mode</span>
+            </Button>
+            <Button
+              variant={activeMode === "text" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setActiveMode("text")}
+              className="text-xs font-semibold"
+            >
+              <FileText className="w-3.5 h-3.5 mr-1.5" />
+              <span>Text Mode</span>
+            </Button>
           </div>
 
-          <Textarea
-            rows={7}
-            value={answerText}
-            onChange={(e) => setAnswerText(e.target.value)}
-            placeholder="Type your technical explanation here. Cover core concepts, algorithms, concurrency, architecture, and operational trade-offs..."
-            className="font-sans text-sm leading-relaxed"
+          <span className="text-xs text-muted-foreground hidden sm:inline">
+            {activeMode === "voice" ? "Audio recording & real-time TTS active" : "Written typing active"}
+          </span>
+        </div>
+
+        {/* Interactive Mode Stage */}
+        {activeMode === "voice" ? (
+          <VoiceInterviewPanel
+            activeQuestion={activeQuestion}
+            isSubmittingAnswer={isSubmitting}
+            onSubmitAnswer={handleDirectSubmitAnswer}
+            onSwitchToTextMode={() => setActiveMode("text")}
           />
-
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2">
-            <span className="text-xs text-muted-foreground font-mono">
-              Word count: {wordCount} words {wordCount < 30 ? "(Aim for at least 40 words for comprehensive evaluation)" : ""}
-            </span>
-
-            <div className="flex items-center gap-3">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setAnswerText("")}
-                disabled={isSubmitting || !answerText}
-              >
-                Clear
-              </Button>
-
-              <Button
-                onClick={handleSubmitAnswer}
-                disabled={isSubmitting || !answerText.trim() || !activeQuestion}
-                className="shadow-xs"
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    <span>Evaluating with AI...</span>
-                  </>
-                ) : (
-                  <>
-                    <span>Submit Answer & Continue</span>
-                    <ArrowRight className="w-4 h-4 ml-1.5" />
-                  </>
-                )}
-              </Button>
+        ) : (
+          /* Text Mode Answer Drafting Editor */
+          <Card className="shadow-xs space-y-4 p-6">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                Your Answer (Text Practice Mode)
+              </label>
+              <div className="flex items-center gap-2 text-xs text-emerald-600 font-medium">
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                <span>Ready to submit</span>
+              </div>
             </div>
-          </div>
-        </Card>
+
+            <Textarea
+              rows={7}
+              value={answerText}
+              onChange={(e) => setAnswerText(e.target.value)}
+              placeholder="Type your technical explanation here. Cover core concepts, algorithms, concurrency, architecture, and operational trade-offs..."
+              className="font-sans text-sm leading-relaxed"
+            />
+
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2">
+              <span className="text-xs text-muted-foreground font-mono">
+                Word count: {wordCount} words {wordCount < 30 ? "(Aim for at least 40 words for comprehensive evaluation)" : ""}
+              </span>
+
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setAnswerText("")}
+                  disabled={isSubmitting || !answerText}
+                >
+                  Clear
+                </Button>
+
+                <Button
+                  onClick={handleSubmitTextAnswer}
+                  disabled={isSubmitting || !answerText.trim() || !activeQuestion}
+                  className="shadow-xs"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      <span>Evaluating with AI...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Submit Answer & Continue</span>
+                      <ArrowRight className="w-4 h-4 ml-1.5" />
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          </Card>
+        )}
 
         {/* Finish Session Early Shortcut */}
         <div className="text-center pt-2">
